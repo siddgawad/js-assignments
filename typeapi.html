@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokémon Finder</title>
+    <link rel="stylesheet" href="./style.css">
+    <!-- Optional: Add this for the Poppins font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Pokémon Finder</h1>
+        </div>
+        
+        <div class="search-container">
+            <select type="text" id="poketype"></select>
+            <input type = "number" id="num">
+            <button id="btn">Find</button>
+        </div>
+        
+        <div class="loading">
+            <div class="loading-spinner"></div>
+        </div>
+        
+        <div id="card"></div>
+        <div id="image"></div>
+    </div>
+
+    <script>
+
+        async function loadpoketype(){
+            const select = document.getElementById("poketype");
+            select.innerHTML="";
+            const defaultOption = document.createElement("option");
+            defaultOption.value = "";
+            defaultOption.textContent = "";
+            defaultOption.selected = true;  
+            defaultOption.disabled = true;  
+            select.appendChild(defaultOption);
+
+
+
+            const responseload = await fetch(`https://pokeapi.co/api/v2/type`);
+            dataload = await responseload.json();
+            const resultload = dataload.results;
+            // const typesload = resultload.results.map(r=>results.name);
+            resultload.forEach(type=>{
+                const selectload = document.createElement("option");
+                selectload.value = type.name;
+                selectload.textContent = type.name.toUpperCase();
+                select.appendChild(selectload);
+
+            });
+
+                };
+                loadpoketype();
+
+
+
+        const button = document.getElementById("btn").addEventListener("click", async function(){
+            
+            document.querySelector('.loading').style.display = 'flex';
+            
+            const type = document.getElementById("poketype").value.trim().toLowerCase();
+            try {
+                const response = await fetch(`https://pokeapi.co/api/v2/type/${type}`);
+                const data = await response.json();
+
+                const div = document.getElementById("card");
+                const div2 = document.getElementById("image");
+                const h1 = document.createElement("h1");
+                
+                div.innerHTML = "";
+                div2.innerHTML = "";
+
+                const num = parseInt(document.getElementById("num").value);
+                if(isNaN(num)|| num<0){
+                    alert("Enter a valid number");
+                    return;
+                }
+                const pokemonList = data.pokemon.slice(0, num);
+                h1.textContent = `${type.toUpperCase()} type Pokémon`;
+
+                div.appendChild(h1);
+                // Make card visible with animation
+                div.classList.add('visible');
+
+                for (let p of pokemonList) {
+                    const response2 = await fetch(p.pokemon.url);
+                    const data2 = await response2.json();
+
+                    const imageUrl = data2.sprites.front_default;
+                    
+                    const pokemonCard = document.createElement("div");
+                    pokemonCard.className = "pokemon-card";
+                    
+                    const img = document.createElement("img");
+                    img.src = imageUrl;
+                    
+                    const pokemonName = document.createElement("div");
+                    pokemonName.className = "pokemon-name";
+                    pokemonName.textContent = p.pokemon.name;
+                    
+                    pokemonCard.appendChild(img);
+                    pokemonCard.appendChild(pokemonName);
+                    div2.appendChild(pokemonCard);
+                }
+            } catch (error) {
+                const div = document.getElementById("card");
+                div.innerHTML = `<h1>Error: Pokémon type "${type}" not found</h1>`;
+                div.classList.add('visible');
+            } finally {
+                // Hide loading spinner
+                document.querySelector('.loading').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
