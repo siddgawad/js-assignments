@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Colored Buttons</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: white;
+            font-family: Arial, sans-serif;
+        }
+        
+        .button-container {
+            display: flex;
+            gap: 10px;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.2);
+            margin: 5rem;
+            border-radius: 10px;
+        }
+        
+        .button {
+            padding: 8px 20px;
+            border-radius: 20px;
+            border: none;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            min-width: 80px;
+            text-align: center;
+        }
+        
+        .red {
+            background-color: #FF0000;
+        }
+        
+        .yellow {
+            background-color: #FFFF00;
+            color: black;
+        }
+        
+        .black {
+            background-color: #000000;
+        }
+        
+        .purple {
+            background-color: #800080;
+        }
+        
+        .green {
+            background-color: #008000;
+        }
+        
+        .blue {
+            background-color: #0000FF;
+        }
+        
+        .default {
+            background-color: #FF7F50;
+        }
+    </style>
+</head>
+<body>
+    <div class="button-container">
+    <div id="red" class="button red">Red</div>
+    <div id="yellow" class="button yellow">Yellow</div>
+    <div id="black" class="button black">Black</div>
+    <div id="purple" class="button purple">Purple</div>
+    <div id="green" class="button green">Green</div>
+    <div id="blue" class="button blue">Blue</div>
+    <div id="default" class="button default">Default</div>
+
+        <script>
+
+            function color_changer(){
+                const btn = document.querySelectorAll(".button");
+                btn.forEach(b=>{
+                    b.addEventListener("click", function () {
+                     if (b.id === "default") {
+                     document.body.style.backgroundColor = "white"; // Reset to original white
+                     } else {
+                     document.body.style.backgroundColor = b.id;
+                       }
+                       });
+                });
+
+
+            };
+
+            color_changer();
+
+
+
+
+        </script>
+    </div>
+</body>
+</html>
