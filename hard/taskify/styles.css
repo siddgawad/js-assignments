@@ -1,0 +1,194 @@
+body {
+  font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  background-color: #f0f2f5;
+  color: #333;
+  margin: 0;
+  padding: 20px;
+  min-height: 100vh;
+}
+
+.kanban-board {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px;
+  gap: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.column {
+  background: white;
+  padding: 20px;
+  width: 24%;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.column:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+.column-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.column-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  color: #444;
+}
+
+.cards-container {
+  min-height: 120px;
+  margin: 10px 0;
+  transition: background-color 0.2s;
+}
+
+.cards-container:empty {
+  background-color: rgba(0, 0, 0, 0.02);
+  border-radius: 8px;
+  border: 2px dashed rgba(0, 0, 0, 0.1);
+}
+
+.card {
+  background: #fff;
+  padding: 15px;
+  margin: 15px 0;
+  border-left: 5px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.card-title {
+  font-weight: 600;
+  margin: 0;
+  color: #333;
+}
+
+.card-description {
+  font-size: 0.9em;
+  color: #666;
+  margin: 8px 0;
+}
+
+.priority {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75em;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.priority.low { 
+  border-color: #4caf50; 
+  background-color: rgba(76, 175, 80, 0.1);
+  color: #388e3c;
+}
+
+.priority.medium { 
+  border-color: #ff9800; 
+  background-color: rgba(255, 152, 0, 0.1);
+  color: #f57c00;
+}
+
+.priority.urgent { 
+  border-color: #f44336; 
+  background-color: rgba(244, 67, 54, 0.1);
+  color: #d32f2f;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8em;
+  color: #888;
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75em;
+  font-weight: bold;
+  color: #666;
+}
+
+.add-new {
+  background-color: #4a6cfa;
+  color: white;
+  border: none;
+  padding: 12px;
+  width: 100%;
+  cursor: pointer;
+  border-radius: 8px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.add-new:hover {
+  background-color: #3a5af9;
+  box-shadow: 0 4px 8px rgba(74, 108, 250, 0.3);
+}
+
+.plus-icon {
+  font-size: 1.2em;
+  line-height: 1;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .kanban-board {
+    flex-wrap: wrap;
+  }
+  
+  .column {
+    width: 48%;
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .column {
+    width: 100%;
+  }
+}

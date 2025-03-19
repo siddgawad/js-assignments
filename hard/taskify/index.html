@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kanban Board</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="kanban-board">
+    <!-- To Do Column -->
+    <div class="column">
+      <div class="column-header">
+        <h2>To Do</h2>
+      </div>
+      <div class="cards-container"></div>
+      <button class="add-new">Add new <span class="plus-icon">+</span></button>
+    </div>
+
+    <!-- In Progress Column -->
+    <div class="column">
+      <div class="column-header">
+        <h2>In Progress</h2>
+      </div>
+      <div class="cards-container"></div>
+      <button class="add-new">Add new <span class="plus-icon">+</span></button>
+    </div>
+
+    <!-- Under Review Column -->
+    <div class="column">
+      <div class="column-header">
+        <h2>Under Review</h2>
+      </div>
+      <div class="cards-container"></div>
+      <button class="add-new">Add new <span class="plus-icon">+</span></button>
+    </div>
+
+    <!-- Finished Column -->
+    <div class="column">
+      <div class="column-header">
+        <h2>Finished</h2>
+      </div>
+      <div class="cards-container"></div>
+      <button class="add-new">Add new <span class="plus-icon">+</span></button>
+    </div>
+  </div>
+
+  <script src="index.js"></script>
+</body>
+</html>
