@@ -1,11 +1,25 @@
 document.addEventListener("DOMContentLoaded", function () {
+    /*
+
+    The DOMContentLoaded event fires when the HTML document has been completely parsed, and 
+    all deferred scripts (<script defer src="…"> and <script type="module">) have downloaded and
+     executed. It doesn't wait for other things like images, subframes, and async scripts to finish loading.
+
+    */
+
     function addCard(cardContainer) {
         const taskTitle = prompt("Enter Task Title:");
         if (!taskTitle) return;
 
-        const priority = prompt("Enter Priority - low, medium, urgent:").toLowerCase();
+        const priority = prompt(
+            "Enter Priority - low, medium, urgent:",
+        ).toLowerCase();
         const validPriorities = ["low", "medium", "urgent"];
         if (!validPriorities.includes(priority)) {
+            /* The includes() method of String values performs a case-sensitive search to 
+            determine whether a given string may be found within this string, returning true or false as appropriate.
+            also used for array.includes() 
+            */
             alert("Invalid priority! Please enter low, medium, or urgent.");
             return;
         }
@@ -13,9 +27,31 @@ document.addEventListener("DOMContentLoaded", function () {
         // Create new card element
         const card = document.createElement("div");
         card.classList.add("card");
-        card.setAttribute("draggable", "true");
+        card.setAttribute("draggable", "true"); /*
+        This line makes the card element (a <div>) draggable, meaning you can click and drag it with your mouse
+        Here, it sets the draggable attribute to "true", which is an HTML5 feature that tells the browser this element can be dragged.
+        The draggable attribute is a boolean attribute, which means it can have either the value "true" or "false".
+        If the attribute is not present, the browser will assume the default value of "false".
+        */
         card.addEventListener("dragstart", handleDragStart);
+
+        /*
+        addEventListener("event", function) is a way to watch for specific actions (events) on an element and respond to them.
+        "dragstart" is an event that fires the moment you click and begin dragging a draggable element.
+        handleDragStart is a function defined elsewhere in your code that handles what happens when dragging starts
+         (e.g., it sets draggedCard to the card you’re dragging).
+
+        */
+
         card.setAttribute("data-priority", priority);
+
+        /*   setAttribute("data-priority", priority) adds a data-* attribute, where * can be any name (here, priority).
+        priority comes from the user’s input earlier in the addCard function (e.g., prompt("Enter Priority...")).
+        data-* attributes are a way to store custom data on HTML elements that your JavaScript can use later.
+
+        This stores the card’s priority (e.g., "urgent") directly on the element. Later, when you drag the card
+         between columns, your code can check this attribute to restore the priority label if needed (e.g., in restorePriorityAndRemoveDelete).
+        */
 
         // Card Header
         const cardHeader = document.createElement("div");
@@ -26,7 +62,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const cardPriority = document.createElement("span");
         cardPriority.classList.add("priority", priority);
-        cardPriority.textContent = priority.charAt(0).toUpperCase() + priority.slice(1);
+        /*
+        This line adds two CSS classes to the cardPriority element: "priority" and the value of the priority variable (e.g., "urgent").
+        How It Works:
+        cardPriority is a <span> element you created earlier with document.createElement("span").
+        classList.add() is a method that lets you add one or more classes to an element’s class attribute.
+        Here, it adds:
+        "priority": A base class, likely for general styling of all priority labels (e.g., font size, padding).
+        priority: The specific priority value (e.g., "low", "medium", or "urgent"), which comes from the user’s 
+        input in the prompt. This could be used for specific styling (e.g., red for "urgent").
+
+
+        */
+        cardPriority.textContent =
+            priority.charAt(0).toUpperCase() + priority.slice(1);
         cardPriority.setAttribute("data-priority-span", "true");
 
         cardHeader.appendChild(cardTitle);
@@ -42,13 +91,42 @@ document.addEventListener("DOMContentLoaded", function () {
         dateElement.textContent = currentDate.toLocaleDateString("en-US", {
             month: "long",
             day: "2-digit",
-            year: "numeric"
+            year: "numeric",
         });
 
         const timeElement = document.createElement("p");
         timeElement.classList.add("time");
         timeElement.setAttribute("data-timestamp", currentDate.getTime());
         timeElement.textContent = "Just now";
+
+        const button = document.createElement("button");
+        button.textContent = "Mark as In Progress";
+
+        button.addEventListener("click", function () {
+            // Find the column with the "In Progress" heading
+            const inProgressColumn = Array.from(document.querySelectorAll(".column")).find(column => 
+                column.querySelector("h2").textContent.trim() === "In Progress"
+            );
+        
+            if (!inProgressColumn) {
+                console.error("In Progress column not found!");
+                return;
+            }
+        
+            // Get the correct cards container inside the column
+            const inProgressContainer = inProgressColumn.querySelector(".cards-container");
+            
+            if (!inProgressContainer) {
+                console.error("In Progress container not found!");
+                return;
+            }
+        
+            // Move the specific task to the "In Progress" column
+            inProgressContainer.appendChild(this.parentElement.parentElement);
+            this.remove(); // Remove the button after moving
+        });
+
+        cardFooter.appendChild(button);
 
         cardFooter.appendChild(dateElement);
         cardFooter.appendChild(timeElement);
@@ -59,7 +137,7 @@ document.addEventListener("DOMContentLoaded", function () {
         cardContainer.appendChild(card);
     }
 
-    document.querySelectorAll(".add-new").forEach(button => {
+    document.querySelectorAll(".add-new").forEach((button) => {
         button.addEventListener("click", (event) => {
             const column = event.target.closest(".column");
             const cardContainer = column.querySelector(".cards-container");
@@ -68,7 +146,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     function updateTimeAgo() {
-        document.querySelectorAll(".time").forEach(timeElement => {
+        document.querySelectorAll(".time").forEach((timeElement) => {
             const timestamp = timeElement.getAttribute("data-timestamp");
             if (!timestamp) return;
 
@@ -98,9 +176,14 @@ document.addEventListener("DOMContentLoaded", function () {
         event.dataTransfer.setData("text/plain", "");
 
         if (!draggedCard.hasAttribute("data-priority")) {
-            const prioritySpan = draggedCard.querySelector("[data-priority-span]");
+            const prioritySpan = draggedCard.querySelector(
+                "[data-priority-span]",
+            );
             if (prioritySpan) {
-                draggedCard.setAttribute("data-priority", prioritySpan.textContent.toLowerCase());
+                draggedCard.setAttribute(
+                    "data-priority",
+                    prioritySpan.textContent.toLowerCase(),
+                );
             }
         }
     }
@@ -127,7 +210,10 @@ document.addEventListener("DOMContentLoaded", function () {
             dropTarget.appendChild(draggedCard);
             dropTarget.classList.remove("drag-over");
 
-            const columnTitle = dropTarget.closest(".column").querySelector("h2").textContent.trim();
+            const columnTitle = dropTarget
+                .closest(".column")
+                .querySelector("h2")
+                .textContent.trim();
 
             if (columnTitle === "Finished") {
                 removePriorityAndAddDelete(draggedCard);
@@ -159,7 +245,9 @@ document.addEventListener("DOMContentLoaded", function () {
             if (restoredPriority) {
                 const newPrioritySpan = document.createElement("span");
                 newPrioritySpan.classList.add("priority", restoredPriority);
-                newPrioritySpan.textContent = restoredPriority.charAt(0).toUpperCase() + restoredPriority.slice(1);
+                newPrioritySpan.textContent =
+                    restoredPriority.charAt(0).toUpperCase() +
+                    restoredPriority.slice(1);
                 newPrioritySpan.setAttribute("data-priority-span", "true");
 
                 card.querySelector(".card-header").appendChild(newPrioritySpan);
@@ -172,13 +260,13 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    document.querySelectorAll(".cards-container").forEach(container => {
+    document.querySelectorAll(".cards-container").forEach((container) => {
         container.addEventListener("dragover", handleDragOver);
         container.addEventListener("dragleave", handleDragLeave);
         container.addEventListener("drop", handleDrop);
     });
 
-    document.querySelectorAll(".card").forEach(card => {
+    document.querySelectorAll(".card").forEach((card) => {
         card.setAttribute("draggable", "true");
         card.addEventListener("dragstart", handleDragStart);
     });
