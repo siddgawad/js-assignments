@@ -40,6 +40,10 @@ document.addEventListener("DOMContentLoaded", function () {
         "dragstart" is an event that fires the moment you click and begin dragging a draggable element.
         handleDragStart is a function defined elsewhere in your code that handles what happens when dragging starts
          (e.g., it sets draggedCard to the card you’re dragging).
+         The value of this attribute is set dynamically based on the variable priority (which was input by the user, such as "low", "medium", or "urgent").
+
+         <div class="card" data-priority="urgent"></div>
+
 
         */
 
@@ -72,11 +76,26 @@ document.addEventListener("DOMContentLoaded", function () {
         priority: The specific priority value (e.g., "low", "medium", or "urgent"), which comes from the user’s 
         input in the prompt. This could be used for specific styling (e.g., red for "urgent").
 
+        <span class="priority urgent">Urgent</span>
+
+
 
         */
         cardPriority.textContent =
             priority.charAt(0).toUpperCase() + priority.slice(1);
         cardPriority.setAttribute("data-priority-span", "true");
+
+        /*
+
+        priority.charAt(0).toUpperCase()
+        Takes the first character of the priority string ("urgent" → "u") and capitalizes it ("u" → "U").
+
+        priority.slice(1)
+        Extracts the remaining characters from position 1 onward ("urgent" → "rgent").
+
+        Concatenates these two results to form a properly capitalized string ("Urgent").
+
+        */
 
         cardHeader.appendChild(cardTitle);
         cardHeader.appendChild(cardPriority);
@@ -87,16 +106,45 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const dateElement = document.createElement("p");
         dateElement.classList.add("date");
-        const currentDate = new Date();
-        dateElement.textContent = currentDate.toLocaleDateString("en-US", {
+        const currentDate = new Date(); // Creates a JavaScript Date object, representing the exact current date and time when this code is executed.
+        dateElement.textContent = currentDate.toLocaleDateString("en-US", { 
             month: "long",
             day: "2-digit",
             year: "numeric",
         });
+        /*
+
+        .toLocaleDateString() is a built-in JavaScript method used to convert a Date object into a readable date string based on locale-specific formatting.
+        dateObject.toLocaleDateString(locale, options);
+        locale (optional)
+        Specifies the language/culture to format the date for (e.g., "en-US", "en-GB", "fr-FR").
+        Output (depends on user's locale):
+        3/21/2025 (U.S.) or 21/03/2025 (Europe)
+
+         options (optional)
+         An object specifying additional formatting details (e.g., month, day, year).
+         "en-US" → "March 21, 2025" (Month-Day-Year, English)
+         "en-GB" → "21 March 2025" (Day-Month-Year, British English)
+         "fr-FR" → "21 mars 2025" (Day-Month-Year, French)
+
+         Common options used:
+         Option	Values	Example Output
+         year	"numeric", "2-digit"	"2025" or "25"
+         month	"numeric", "2-digit", "short", "long"	"3", "03", "Mar", "March"
+         day	"numeric", "2-digit"	"5", "05"
+         weekday	"long", "short", "narrow"	"Monday", "Mon", "M"
+
+        */
 
         const timeElement = document.createElement("p");
         timeElement.classList.add("time");
-        timeElement.setAttribute("data-timestamp", currentDate.getTime());
+        timeElement.setAttribute("data-timestamp", currentDate.getTime()); /* data-timestamp is an attribute that stores the current timestamp as a number. 
+        Stores the exact time (in milliseconds) when the card was created, using the getTime() method.
+        The getTime() method returns the number of milliseconds elapsed since January 1, 1970 (UNIX epoch).
+        Why it's done:
+        Allows your JavaScript to later calculate how much time has passed since the card was created (e.g., to update "Just now", "5 mins ago", etc.).
+       
+       */
         timeElement.textContent = "Just now";
 
         const button = document.createElement("button");
@@ -107,6 +155,14 @@ document.addEventListener("DOMContentLoaded", function () {
             const inProgressColumn = Array.from(document.querySelectorAll(".column")).find(column => 
                 column.querySelector("h2").textContent.trim() === "In Progress"
             );
+
+            /*
+            document.querySelectorAll(".column"): grabs all columns on the board.
+            Array.from(...): converts the NodeList into a real array so we can use .find()—NodeLists don’t support it by default.
+            .find(...): locates the column whose <h2> title is "In Progress".
+            */
+
+
         
             if (!inProgressColumn) {
                 console.error("In Progress column not found!");
@@ -115,6 +171,8 @@ document.addEventListener("DOMContentLoaded", function () {
         
             // Get the correct cards container inside the column
             const inProgressContainer = inProgressColumn.querySelector(".cards-container");
+
+            // Find the .cards-container inside the column labeled ‘In Progress’ so I can move the card there
             
             if (!inProgressContainer) {
                 console.error("In Progress container not found!");
@@ -123,7 +181,14 @@ document.addEventListener("DOMContentLoaded", function () {
         
             // Move the specific task to the "In Progress" column
             inProgressContainer.appendChild(this.parentElement.parentElement);
-            this.remove(); // Remove the button after moving
+            /*
+            this refers to the button that was clicked ("Mark as In Progress").
+            .parentElement once = <div class="card-footer">
+            .parentElement.parentElement = <div class="card"> — the entire card
+             So this is saying: “Take the whole card that this button lives inside, and append it to the In Progress column's card container.”
+
+            */
+            this.remove(); // Remove the button after moving the card
         });
 
         cardFooter.appendChild(button);
@@ -137,6 +202,7 @@ document.addEventListener("DOMContentLoaded", function () {
         cardContainer.appendChild(card);
     }
 
+
     document.querySelectorAll(".add-new").forEach((button) => {
         button.addEventListener("click", (event) => {
             const column = event.target.closest(".column");
@@ -144,13 +210,44 @@ document.addEventListener("DOMContentLoaded", function () {
             addCard(cardContainer);
         });
     });
+    /*
+
+    Select all elements with .add-new class
+    → These are usually “Add Task” buttons inside each column.
+
+    Loop through each button
+    → Attach a click listener to each one.
+
+    On click:
+
+    event.target.closest(".column"):
+    Finds the column (i.e., the vertical block) the button belongs to. This ensures each button adds a card to the right place.
+    column.querySelector(".cards-container"):
+    Inside that column, it finds the <div> meant to hold all the cards.
+    addCard(cardContainer):
+    Calls your card-creation function and adds the new card to the correct column.
+
+
+    */
 
     function updateTimeAgo() {
         document.querySelectorAll(".time").forEach((timeElement) => {
             const timestamp = timeElement.getAttribute("data-timestamp");
             if (!timestamp) return;
 
+            /*
+            so with coumnet.queySelectorAll(".time") - we are selecting
+            all the <p> tags with class "time". then we say that for 
+            every .time element run a function under which-
+            timeELement.getAttribute("data-timestamp") - this grabs the value 
+            stored in data-timestamp attribute of that p tag. 
+
+
+            */
+
             const timeDiff = Math.floor((Date.now() - timestamp) / 1000);
+
+            // math.floor rounds a number down to the nearest integer 
 
             let newTimeText;
             if (timeDiff < 60) {
