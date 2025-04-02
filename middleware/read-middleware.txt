@@ -1,0 +1,18 @@
+What is req and when to use body, params, or headers?
+🧪 req is the full request object.
+It holds:
+
+
+✅ Body	    For data sent in POST/PUT/DELETE(e.g., todo title)	req.body.title
+✅ Params	For values inside the URL path	                    req.params.id from /todos/:id
+✅ Query	    For filters/sorting (like search)	                req.query.done from /todos?done=true
+✅ Headers	For metadata like tokens or user info	            req.headers["x-api-key"]
+
+
+💡 Cheat Sheet to Decide:
+You want to…	  Use…	        Example
+Add/edit data	  req.body	    POST /todos with { title: "Go gym" }
+Access specific todo	    req.params	GET /todos/123 → req.params.id
+Filter/search	req.query	GET /todos?done=true → req.query.done
+Check auth/user info	    req.headers	req.headers["user-id"] or "auth-token"
+
