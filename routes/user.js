@@ -74,6 +74,6 @@ router.post('/todos', userMiddleware, (req, res) => {
     res.status(200).json({ message: `User ${req.userId} logged out.` });
   });
   
-
+module.exports = router;
 
 
