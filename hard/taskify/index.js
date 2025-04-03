@@ -1,3 +1,40 @@
+function removeMarkInProgressButton(card) {
+  const btn = card.querySelector(".mark-in-progress");
+  if (btn) btn.remove();
+}
+
+function addMarkInProgressButton(card) {
+  const footer = card.querySelector(".card-footer");
+  if (!footer || card.querySelector(".mark-in-progress")) return;
+
+  const button = document.createElement("button");
+  button.textContent = "Mark as In Progress";
+  button.classList.add("mark-in-progress");
+
+  button.addEventListener("click", async function () {
+      const inProgressColumn = Array.from(document.querySelectorAll(".column")).find(column =>
+          column.querySelector("h2").textContent.trim() === "In Progress"
+      );
+      if (!inProgressColumn) return;
+
+      const inProgressContainer = inProgressColumn.querySelector(".cards-container");
+      inProgressContainer.appendChild(card);
+      removeMarkInProgressButton(card);
+
+      const id = card.getAttribute("data-id");
+      if (id) {
+          await fetch("http://localhost:3000/move", {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id, column: "In Progress" })
+          });
+      }
+  });
+
+  footer.prepend(button);
+}
+
+
 document.addEventListener("DOMContentLoaded", function () {
     /*
 
@@ -7,7 +44,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     */
 
-    function addCard(cardContainer) {
+    async function addCard(cardContainer) {
         const taskTitle = prompt("Enter Task Title:");
         if (!taskTitle) return;
 
@@ -24,8 +61,32 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
+        const columnElement = cardContainer.closest(".column"); // Detect which column the card is being created under
+        const columnName = columnElement.querySelector("h2").textContent.trim();
+        
+
+        const response = await fetch("http://localhost:3000/", { // Call backend to create task
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ title: taskTitle, priority, column: columnName })
+          });
+          
+          const result = await response.json();
+          
+          if (!response.ok) {
+            alert("Failed to add task to backend: " + result.message);
+            return;
+          }
+          
+          // ✅ Now use the task data from backend
+          const taskId = result.todo._id;
+          
         // Create new card element
         const card = document.createElement("div");
+        card.setAttribute("data-id", taskId);
+
         card.classList.add("card");
         card.setAttribute("draggable", "true"); /*
         This line makes the card element (a <div>) draggable, meaning you can click and drag it with your mouse
@@ -136,71 +197,48 @@ document.addEventListener("DOMContentLoaded", function () {
 
         */
 
-        const timeElement = document.createElement("p");
-        timeElement.classList.add("time");
-        timeElement.setAttribute("data-timestamp", currentDate.getTime()); /* data-timestamp is an attribute that stores the current timestamp as a number. 
-        Stores the exact time (in milliseconds) when the card was created, using the getTime() method.
-        The getTime() method returns the number of milliseconds elapsed since January 1, 1970 (UNIX epoch).
-        Why it's done:
-        Allows your JavaScript to later calculate how much time has passed since the card was created (e.g., to update "Just now", "5 mins ago", etc.).
-       
-       */
-        timeElement.textContent = "Just now";
+         const timeElement = document.createElement("p");
+    timeElement.classList.add("time");
+    timeElement.setAttribute("data-timestamp", currentDate.getTime());
+    timeElement.textContent = "Just now";
 
+    cardFooter.appendChild(dateElement);
+    cardFooter.appendChild(timeElement);
+
+    // ✅ Conditionally add "Mark as In Progress" if NOT created in In Progress or Finished
+    if (columnName !== "In Progress" && columnName !== "Finished") {
         const button = document.createElement("button");
         button.textContent = "Mark as In Progress";
+        button.classList.add("mark-in-progress");
 
-        button.addEventListener("click", function () {
-            // Find the column with the "In Progress" heading
-            const inProgressColumn = Array.from(document.querySelectorAll(".column")).find(column => 
+        button.addEventListener("click", async function () {
+            const inProgressColumn = Array.from(document.querySelectorAll(".column")).find(column =>
                 column.querySelector("h2").textContent.trim() === "In Progress"
             );
+            if (!inProgressColumn) return;
 
-            /*
-            document.querySelectorAll(".column"): grabs all columns on the board.
-            Array.from(...): converts the NodeList into a real array so we can use .find()—NodeLists don’t support it by default.
-            .find(...): locates the column whose <h2> title is "In Progress".
-            */
-
-
-        
-            if (!inProgressColumn) {
-                console.error("In Progress column not found!");
-                return;
-            }
-        
-            // Get the correct cards container inside the column
             const inProgressContainer = inProgressColumn.querySelector(".cards-container");
+            inProgressContainer.appendChild(card);
+            this.remove();
 
-            // Find the .cards-container inside the column labeled ‘In Progress’ so I can move the card there
-            
-            if (!inProgressContainer) {
-                console.error("In Progress container not found!");
-                return;
+            const id = card.getAttribute("data-id");
+            if (id) {
+                await fetch("http://localhost:3000/move", {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id, column: "In Progress" })
+                });
             }
-        
-            // Move the specific task to the "In Progress" column
-            inProgressContainer.appendChild(this.parentElement.parentElement);
-            /*
-            this refers to the button that was clicked ("Mark as In Progress").
-            .parentElement once = <div class="card-footer">
-            .parentElement.parentElement = <div class="card"> — the entire card
-             So this is saying: “Take the whole card that this button lives inside, and append it to the In Progress column's card container.”
-
-            */
-            this.remove(); // Remove the button after moving the card
         });
 
-        cardFooter.appendChild(button);
-
-        cardFooter.appendChild(dateElement);
-        cardFooter.appendChild(timeElement);
-
-        // Append everything to the card
-        card.appendChild(cardHeader);
-        card.appendChild(cardFooter);
-        cardContainer.appendChild(card);
+        cardFooter.prepend(button);
     }
+
+    // Add card to UI
+    card.appendChild(cardHeader);
+    card.appendChild(cardFooter);
+    cardContainer.appendChild(card);
+}
 
 
     document.querySelectorAll(".add-new").forEach((button) => {
@@ -300,41 +338,247 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    function handleDrop(event) {
-        event.preventDefault();
-        const dropTarget = event.target.closest(".cards-container");
-        if (dropTarget && draggedCard) {
-            dropTarget.appendChild(draggedCard);
-            dropTarget.classList.remove("drag-over");
+    async function handleDrop(event) {
+      event.preventDefault();
+      const dropTarget = event.target.closest(".cards-container");
+      if (!dropTarget || !draggedCard) return;
+  
+      dropTarget.appendChild(draggedCard);
+      dropTarget.classList.remove("drag-over");
+  
+      const columnTitle = dropTarget
+          .closest(".column")
+          .querySelector("h2")
+          .textContent.trim();
+  
+      const id = draggedCard.getAttribute("data-id");
+  
+      // 🧹 Always remove old button + delete state
+      restorePriorityAndRemoveDelete(draggedCard);
+      removeMarkInProgressButton(draggedCard);
+  
+      // ✅ Add delete button if moved to "Finished"
+      if (columnTitle === "Finished") {
+          removePriorityAndAddDelete(draggedCard);
+  
+          // Optional: Mark status = done in backend
+          if (id) {
+              await fetch("http://localhost:3000/done", {
+                  method: "PUT",
+                  headers: {
+                      "Content-Type": "application/json"
+                  },
+                  body: JSON.stringify({ id })
+              });
+          }
+      }
+  
+      // ✅ If moved to any column EXCEPT "In Progress" and "Finished", add "Mark as In Progress"
+      if (columnTitle !== "In Progress" && columnTitle !== "Finished") {
+          const footer = draggedCard.querySelector(".card-footer");
+  
+          if (!draggedCard.querySelector(".mark-in-progress")) {
+              const button = document.createElement("button");
+              button.textContent = "Mark as In Progress";
+              button.classList.add("mark-in-progress");
+  
+              button.addEventListener("click", async function () {
+                  const inProgressColumn = Array.from(document.querySelectorAll(".column")).find(column =>
+                      column.querySelector("h2").textContent.trim() === "In Progress"
+                  );
+                  if (!inProgressColumn) return;
+  
+                  const inProgressContainer = inProgressColumn.querySelector(".cards-container");
+                  inProgressContainer.appendChild(draggedCard);
+                  this.remove();
+  
+                  const id = draggedCard.getAttribute("data-id");
+                  if (id) {
+                      await fetch("http://localhost:3000/move", {
+                          method: "PUT",
+                          headers: {
+                              "Content-Type": "application/json"
+                          },
+                          body: JSON.stringify({ id, column: "In Progress" })
+                      });
+                  }
+              });
+  
+              footer.prepend(button);
+          }
+      }
+  
+      // ✅ Always update backend with new column
+      if (id) {
+          await fetch("http://localhost:3000/move", {
+              method: "PUT",
+              headers: {
+                  "Content-Type": "application/json"
+              },
+              body: JSON.stringify({ id, column: columnTitle })
+          });
+      }
+  }
+  
 
-            const columnTitle = dropTarget
-                .closest(".column")
-                .querySelector("h2")
-                .textContent.trim();
+      function calculateTimeAgo(date) {
+        const secondsAgo = Math.floor((Date.now() - date.getTime()) / 1000);
+      
+        if (secondsAgo < 60) return "Just now";
+        if (secondsAgo < 3600) return `${Math.floor(secondsAgo / 60)} mins ago`;
+        if (secondsAgo < 86400) return `${Math.floor(secondsAgo / 3600)} hours ago`;
+        return `${Math.floor(secondsAgo / 86400)} days ago`;
+      }
+      
 
-            if (columnTitle === "Finished") {
-                removePriorityAndAddDelete(draggedCard);
-            } else {
-                restorePriorityAndRemoveDelete(draggedCard);
+      async function loadAndRenderTasks() {
+        const response = await fetch("http://localhost:3000/");
+        const result = await response.json();
+        const todos = result.todos;
+    
+       
+        console.log("Rendering todos from MongoDB:", todos);  //debugging currently will remove once issue found
+    
+    
+        todos.forEach(todo => {
+            const columnName = todo.column || (todo.status ? "Finished" : "To Do");
+    
+            const column = Array.from(document.querySelectorAll(".column")).find(col =>
+                col.querySelector("h2").textContent.trim() === columnName
+            );
+    
+            const cardContainer = column.querySelector(".cards-container");
+    
+            const card = document.createElement("div");
+            card.classList.add("card");
+            card.setAttribute("draggable", "true");
+            card.setAttribute("data-id", todo._id);
+            card.setAttribute("data-priority", todo.priority); 
+    
+            const cardHeader = document.createElement("div");
+            cardHeader.classList.add("card-header");
+    
+            const cardTitle = document.createElement("h3");
+            cardTitle.textContent = todo.title;
+    
+            const cardPriority = document.createElement("span");
+            cardPriority.classList.add("priority", todo.priority);
+            cardPriority.textContent = todo.priority.charAt(0).toUpperCase() + todo.priority.slice(1);
+            cardPriority.setAttribute("data-priority-span", "true");
+    
+            cardHeader.appendChild(cardTitle);
+            cardHeader.appendChild(cardPriority);
+    
+            const cardFooter = document.createElement("div");
+            cardFooter.classList.add("card-footer");
+    
+            const date = new Date(todo.createdAt);
+    
+            const dateElement = document.createElement("p");
+            dateElement.classList.add("date");
+            dateElement.textContent = date.toLocaleDateString("en-US", {
+                month: "long",
+                day: "2-digit",
+                year: "numeric",
+            });
+    
+            const timeElement = document.createElement("p");
+            timeElement.classList.add("time");
+            timeElement.setAttribute("data-timestamp", date.getTime());
+            timeElement.textContent = calculateTimeAgo(date);
+    
+            cardFooter.appendChild(dateElement);
+            cardFooter.appendChild(timeElement);
+    
+            // if not finished, add in-progress button
+         
+            if (!todo.status && todo.column === "To Do") {
+                const button = document.createElement("button");
+                button.textContent = "Mark as In Progress";
+              
+                button.addEventListener("click", async function () {
+                  const inProgressColumn = Array.from(document.querySelectorAll(".column")).find(column =>
+                    column.querySelector("h2").textContent.trim() === "In Progress"
+                  );
+                  if (!inProgressColumn) return;
+                  const inProgressContainer = inProgressColumn.querySelector(".cards-container");
+                  inProgressContainer.appendChild(card);
+                  button.remove();
+              
+                  //  persist to backend
+                  const id = card.getAttribute("data-id");
+                  if (id) {
+                    await fetch("http://localhost:3000/move", {
+                      method: "PUT",
+                      headers: {
+                        "Content-Type": "application/json"
+                      },
+                      body: JSON.stringify({ id, column: "In Progress" })
+                    });
+                  }
+                });
+              
+                cardFooter.appendChild(button);
+              } else {
+                removePriorityAndAddDelete(card);
             }
-        }
+    
+            card.appendChild(cardHeader);
+            card.appendChild(cardFooter);
+            cardContainer.appendChild(card);
+    
+            card.addEventListener("dragstart", handleDragStart);
+        });
     }
+    
+      
 
     function removePriorityAndAddDelete(card) {
         const prioritySpan = card.querySelector("[data-priority-span]");
         if (prioritySpan) {
-            prioritySpan.remove();
+          prioritySpan.remove();
         }
-
+      
         if (!card.querySelector(".delete-btn")) {
-            const deleteBtn = document.createElement("button");
-            deleteBtn.classList.add("delete-btn");
-            deleteBtn.textContent = "Delete";
-            deleteBtn.addEventListener("click", () => card.remove());
+          const deleteBtn = document.createElement("button");
+          deleteBtn.classList.add("delete-btn");
+          deleteBtn.textContent = "Delete";
+      
+          deleteBtn.addEventListener("click", async () => {
+            const id = card.getAttribute("data-id");
+      
+            if (!id) {
+              alert("No ID found on card");
+              return;
+            }
+      
+            const response = await fetch("http://localhost:3000/delete", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({ id }) 
+              /*
+              MongoDB ObjectIds are not integers, so parseInt(id) returns NaN, then backend tries to findById(NaN), that crashes with 500 error
+              hence we pass this as string - since we made this change here we reflect on backend for post /delete route to expect a string ID
 
-            card.appendChild(deleteBtn);
+              */
+            });
+      
+            const result = await response.json();
+      
+            if (response.ok) {
+              card.remove(); // ✅ remove from UI
+              console.log("Deleted from backend:", result);
+            } else {
+              alert("Failed to delete: " + result.message);
+            }
+          });
+      
+          card.appendChild(deleteBtn);
         }
-    }
+      }
+      
 
     function restorePriorityAndRemoveDelete(card) {
         if (!card.querySelector("[data-priority-span]")) {
@@ -367,4 +611,6 @@ document.addEventListener("DOMContentLoaded", function () {
         card.setAttribute("draggable", "true");
         card.addEventListener("dragstart", handleDragStart);
     });
+
+    loadAndRenderTasks();
 });
