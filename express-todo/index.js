@@ -113,7 +113,7 @@ app.put("/move", async (req, res) => {
 
 // ✅ Connect to MongoDB and start server
 mongoose
-    .connect("mongodb+srv://taskify_user:taskify123@cluster0.0ruxnow.mongodb.net/taskify?retryWrites=true&w=majority&appName=Cluster0")
+    .connect("mongodb+srv://[username]]:[password]@cluster0.0ruxnow.mongodb.net/taskify?retryWrites=true&w=majority&appName=Cluster0")
     .then(() => {
         console.log("✅ Connected to MongoDB Atlas");
         app.listen(PORT, () => {
