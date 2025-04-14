@@ -1,41 +1,51 @@
-import dotenv from "dotenv";
-import { fileURLToPath } from "url";
-import { dirname, join } from "path";
+// server/server.js
 import express from "express";
-import cors from "cors";
 import mongoose from "mongoose";
-import path from "path";
-
-import todoRoutes from "../routes/todoRoutes.js";
+import cors from "cors";
+import dotenv from "dotenv";
+import morgan from "morgan";
 import authRoutes from "../routes/authRoutes.js";
+import todoRoutes from "../routes/todoRoutes.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import { createServer } from "http";
+import { Server } from "socket.io";
 
-dotenv.config({ path: join(__dirname, "../.env") });
+dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const httpServer = createServer(app); // Create HTTP server
+const io = new Server(httpServer, {
+  cors: {
+    origin: "*", // Dev: allow all; Prod: restrict domain
+    methods: ["GET", "POST", "PUT", "DELETE"],
+  },
+});
 
+export const getIO = () => io; // export for use in controller
+
+// Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "../public")));
+app.use(morgan("dev"));
+app.use(express.static("public"));
 
-app.use("/api/todos", todoRoutes);
+// Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/todos", todoRoutes);
 
+// MongoDB connect
 mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log("✅ Connected to MongoDB Atlas");
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on http://localhost:${PORT}`);
-    });
-  })
-  .catch((err) => {
-    console.error("❌ MongoDB connection error:", err);
-  });
+  .connect(process.env.MONGODB_URI)
+  .then(() => console.log("✅ MongoDB connected"))
+  .catch((err) => console.error("❌ MongoDB error:", err));
 
-app.all("*", (req, res) => {
-  res.status(404).send(`Route not found: ${req.method} ${req.path}`);
+// Socket connection
+io.on("connection", (socket) => {
+  console.log("🟢 A client connected via WebSocket");
+});
+
+// Server listen
+const PORT = process.env.PORT || 3000;
+httpServer.listen(PORT, () => {
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
 });

@@ -1,4 +1,6 @@
 import Todo from "../models/Todo.js";
+import { getIO } from "../server/server.js";
+import { validationResult } from "express-validator";
 
 // ✅ GET all todos for logged-in user
 const getAllTodos = async (req, res) => {
@@ -7,21 +9,22 @@ const getAllTodos = async (req, res) => {
     return res.status(200).json({ todos });
   } catch (err) {
     console.error("Error fetching todos:", err);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({
+      message: "Failed to fetch todos",
+      error: process.env.NODE_ENV === "development" ? err.message : undefined
+    });
   }
 };
 
-// ✅ CREATE new todo
+// ✅ CREATE new todo with validation check
 const createTodo = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ message: "Validation failed", errors: errors.array() });
+  }
+
   try {
     const { title, priority, column } = req.body;
-
-    if (!title) return res.status(400).json({ message: "Title is required" });
-
-    const validColumns = ["To Do", "In Progress", "Under Review", "Finished"];
-    if (!validColumns.includes(column)) {
-      return res.status(400).json({ message: "Invalid column name" });
-    }
 
     const newTodo = await Todo.create({
       title,
@@ -30,10 +33,15 @@ const createTodo = async (req, res) => {
       userId: req.user.id
     });
 
+    getIO().emit("todoCreated", newTodo);
+
     return res.status(201).json({ message: "Todo created", todo: newTodo });
   } catch (err) {
     console.error("Error creating todo:", err);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({
+      message: "Failed to create todo",
+      error: process.env.NODE_ENV === "development" ? err.message : undefined
+    });
   }
 };
 
@@ -53,7 +61,10 @@ const deleteTodo = async (req, res) => {
     res.status(200).json({ message: "Todo deleted successfully" });
   } catch (err) {
     console.error("Error deleting todo:", err);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({
+      message: "Failed to delete todo",
+      error: process.env.NODE_ENV === "development" ? err.message : undefined
+    });
   }
 };
 
@@ -79,7 +90,10 @@ const markDone = async (req, res) => {
     res.status(200).json({ message: "Todo marked as done", todo });
   } catch (err) {
     console.error("Error marking todo as done:", err);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({
+      message: "Failed to mark todo as done",
+      error: process.env.NODE_ENV === "development" ? err.message : undefined
+    });
   }
 };
 
@@ -103,7 +117,10 @@ const moveTodo = async (req, res) => {
     res.status(200).json({ message: "Column updated", todo });
   } catch (err) {
     console.error("Error moving todo:", err);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({
+      message: "Failed to move todo",
+      error: process.env.NODE_ENV === "development" ? err.message : undefined
+    });
   }
 };
 
