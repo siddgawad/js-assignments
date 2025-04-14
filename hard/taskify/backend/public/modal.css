@@ -1,0 +1,209 @@
+/* Modal overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(8px);
+    animation: fadeIn 0.3s ease;
+  }
+  
+  /* Modal for card detail - keeping your original ID */
+  #card-detail-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: none; /* Hidden by default */
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(8px);
+  }
+  
+  /* Modal content - shared between both modals */
+  .modal-content {
+    background-color: rgba(255, 255, 255, 0.85);
+    padding: 28px;
+    width: 100%;
+    max-width: 600px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    position: relative;
+    animation: modalSlideIn 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  .modal-content h3 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 22px;
+    font-weight: 600;
+  }
+  
+  /* Input styling for the createModernPrompt function */
+  .modal-content input[type="text"] {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    font-size: 16px;
+    background-color: rgba(255, 255, 255, 0.7);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+    margin-bottom: 20px;
+  }
+  
+  .modal-content input[type="text"]:focus {
+    outline: none;
+    border-color: #1976d2;
+    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.2);
+    background-color: rgba(255, 255, 255, 0.9);
+  }
+  
+  /* Keep your original textarea styling but improve it */
+  .modal-content textarea {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    resize: vertical;
+    min-height: 120px;
+    font-family: inherit;
+    font-size: 15px;
+    background-color: rgba(255, 255, 255, 0.7);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+    margin-bottom: 0;
+  }
+  
+  .modal-content textarea:focus {
+    outline: none;
+    border-color: #1976d2;
+    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.2);
+    background-color: rgba(255, 255, 255, 0.9);
+  }
+  
+  /* File and date inputs */
+  .modal-content input[type="file"],
+  .modal-content input[type="date"] {
+    display: block;
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    font-size: 15px;
+    margin: 0;
+    background-color: rgba(255, 255, 255, 0.7);
+    transition: all 0.2s ease;
+  }
+  
+  .modal-content input[type="file"]::-webkit-file-upload-button {
+    background-color: #f0f0f0;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-right: 10px;
+    cursor: pointer;
+    color: #444;
+    transition: all 0.2s ease;
+  }
+  
+  .modal-content input[type="file"]::-webkit-file-upload-button:hover {
+    background-color: #e0e0e0;
+  }
+  
+  /* Action buttons styling - shared between both modals */
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 8px;
+  }
+  
+  .modal-actions button,
+  .btn-cancel,
+  .btn-confirm {
+    padding: 12px 20px;
+    font-size: 15px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+  
+  .modal-actions .save-btn,
+  .btn-confirm {
+    background-color: #1976d2;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(25, 118, 210, 0.3);
+  }
+  
+  .modal-actions .cancel-btn,
+  .btn-cancel {
+    background-color: rgba(240, 240, 240, 0.7);
+    color: #444;
+  }
+  
+  .modal-actions .save-btn:hover,
+  .btn-confirm:hover {
+    background-color: #145ca8;
+    box-shadow: 0 4px 12px rgba(25, 118, 210, 0.4);
+    transform: translateY(-1px);
+  }
+  
+  .modal-actions .cancel-btn:hover,
+  .btn-cancel:hover {
+    background-color: rgba(220, 220, 220, 0.9);
+  }
+  
+  /* Helper class for form groups */
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #2c3e50;
+    font-size: 15px;
+  }
+  
+  /* Additional animation for modals */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes modalSlideIn {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  /* Hidden class for modals */
+  .modal.hidden {
+    display: none;
+  }

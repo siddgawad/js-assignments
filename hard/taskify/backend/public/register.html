@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register - Taskify</title>
+  <link rel="stylesheet" href="auth.css">
+</head>
+<body>
+  <div class="auth-container">
+    <h2>Create your account ✨</h2>
+    <div id="feedback" style="display: none;"></div>
+    
+    <form id="registerForm">
+      <div class="form-group">
+        <label for="username">Email Address</label>
+        <input type="email" id="username" placeholder="youremail@example.com" required autocomplete="email" />
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Create a strong password" required autocomplete="new-password" />
+        <div id="password-strength"></div>
+        
+        <div id="password-requirements">
+          <p>Password requirements:</p>
+          <ul>
+            <li id="req-length">At least 8 characters</li>
+            <li id="req-uppercase">At least 1 uppercase letter</li>
+            <li id="req-number">At least 1 number</li>
+            <li id="req-special">At least 1 special character</li>
+          </ul>
+        </div>
+      </div>
+      
+      <button type="submit">Create Account</button>
+    </form>
+    <p>Already have an account? <a href="login.html">Login here</a></p>
+  </div>
+
+  <script src="./register.js"></script>
+</body>
+</html>

@@ -1,3 +1,23 @@
+import createModernPrompt from "./modal.js";
+import  openCardModal  from "./cardDetail.js";
+
+
+
+
+const token = localStorage.getItem("token");
+if (!token) {
+  alert("Please login to use the app.");
+  window.location.href = "/login.html"; // redirect if not logged in
+}
+
+document.getElementById("logoutBtn").addEventListener("click", () => {
+    localStorage.removeItem("token");
+    alert("You've been logged out!");
+    window.location.href = "http://localhost:3000/login.html";
+  });
+  
+
+
 function removeMarkInProgressButton(card) {
   const btn = card.querySelector(".mark-in-progress");
   if (btn) btn.remove();
@@ -23,10 +43,13 @@ function addMarkInProgressButton(card) {
 
       const id = card.getAttribute("data-id");
       if (id) {
-          await fetch("http://localhost:3000/move", {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ id, column: "In Progress" })
+        await fetch("http://localhost:3000/api/todos/move", {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({ id, column: "In Progress" })
           });
       }
   });
@@ -45,12 +68,15 @@ document.addEventListener("DOMContentLoaded", function () {
     */
 
     async function addCard(cardContainer) {
-        const taskTitle = prompt("Enter Task Title:");
+        const taskTitle = await createModernPrompt("Enter Task Title:");
         if (!taskTitle) return;
 
-        const priority = prompt(
+        const priorityInput = await createModernPrompt(
             "Enter Priority - low, medium, urgent:",
-        ).toLowerCase();
+        );
+        if (!priorityInput) return;
+        const priority = priorityInput.toLowerCase();
+
         const validPriorities = ["low", "medium", "urgent"];
         if (!validPriorities.includes(priority)) {
             /* The includes() method of String values performs a case-sensitive search to 
@@ -63,17 +89,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const columnElement = cardContainer.closest(".column"); // Detect which column the card is being created under
         const columnName = columnElement.querySelector("h2").textContent.trim();
-        
-
-        const response = await fetch("http://localhost:3000/", { // Call backend to create task
+        const response = await fetch("http://localhost:3000/api/todos", {
             method: "POST",
             headers: {
-              "Content-Type": "application/json"
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`
             },
             body: JSON.stringify({ title: taskTitle, priority, column: columnName })
           });
           
-          const result = await response.json();
+        const result = await response.json();
           
           if (!response.ok) {
             alert("Failed to add task to backend: " + result.message);
@@ -100,7 +125,7 @@ document.addEventListener("DOMContentLoaded", function () {
         addEventListener("event", function) is a way to watch for specific actions (events) on an element and respond to them.
         "dragstart" is an event that fires the moment you click and begin dragging a draggable element.
         handleDragStart is a function defined elsewhere in your code that handles what happens when dragging starts
-         (e.g., it sets draggedCard to the card you’re dragging).
+         (e.g., it sets draggedCard to the card you're dragging).
          The value of this attribute is set dynamically based on the variable priority (which was input by the user, such as "low", "medium", or "urgent").
 
          <div class="card" data-priority="urgent"></div>
@@ -111,10 +136,10 @@ document.addEventListener("DOMContentLoaded", function () {
         card.setAttribute("data-priority", priority);
 
         /*   setAttribute("data-priority", priority) adds a data-* attribute, where * can be any name (here, priority).
-        priority comes from the user’s input earlier in the addCard function (e.g., prompt("Enter Priority...")).
+        priority comes from the user's input earlier in the addCard function (e.g., prompt("Enter Priority...")).
         data-* attributes are a way to store custom data on HTML elements that your JavaScript can use later.
 
-        This stores the card’s priority (e.g., "urgent") directly on the element. Later, when you drag the card
+        This stores the card's priority (e.g., "urgent") directly on the element. Later, when you drag the card
          between columns, your code can check this attribute to restore the priority label if needed (e.g., in restorePriorityAndRemoveDelete).
         */
 
@@ -123,6 +148,7 @@ document.addEventListener("DOMContentLoaded", function () {
         cardHeader.classList.add("card-header");
 
         const cardTitle = document.createElement("h3");
+        cardTitle.addEventListener("click", () => openCardModal(card));
         cardTitle.textContent = taskTitle;
 
         const cardPriority = document.createElement("span");
@@ -131,10 +157,10 @@ document.addEventListener("DOMContentLoaded", function () {
         This line adds two CSS classes to the cardPriority element: "priority" and the value of the priority variable (e.g., "urgent").
         How It Works:
         cardPriority is a <span> element you created earlier with document.createElement("span").
-        classList.add() is a method that lets you add one or more classes to an element’s class attribute.
+        classList.add() is a method that lets you add one or more classes to an element's class attribute.
         Here, it adds:
         "priority": A base class, likely for general styling of all priority labels (e.g., font size, padding).
-        priority: The specific priority value (e.g., "low", "medium", or "urgent"), which comes from the user’s 
+        priority: The specific priority value (e.g., "low", "medium", or "urgent"), which comes from the user's 
         input in the prompt. This could be used for specific styling (e.g., red for "urgent").
 
         <span class="priority urgent">Urgent</span>
@@ -207,7 +233,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // ✅ Conditionally add "Mark as In Progress" if NOT created in In Progress or Finished
     if (columnName !== "In Progress" && columnName !== "Finished") {
-        const button = document.createElement("button");
+
+  if (!card.querySelector(".mark-in-progress")) {
+    const button = document.createElement("button");
         button.textContent = "Mark as In Progress";
         button.classList.add("mark-in-progress");
 
@@ -223,15 +251,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const id = card.getAttribute("data-id");
             if (id) {
-                await fetch("http://localhost:3000/move", {
+                await fetch("http://localhost:3000/api/todos/move", {
                     method: "PUT",
-                    headers: { "Content-Type": "application/json" },
+                    headers: { "Content-Type": "application/json",Authorization: `Bearer ${token}` },
                     body: JSON.stringify({ id, column: "In Progress" })
                 });
             }
         });
 
         cardFooter.prepend(button);
+
+  }
+        
     }
 
     // Add card to UI
@@ -251,7 +282,7 @@ document.addEventListener("DOMContentLoaded", function () {
     /*
 
     Select all elements with .add-new class
-    → These are usually “Add Task” buttons inside each column.
+    → These are usually "Add Task" buttons inside each column.
 
     Loop through each button
     → Attach a click listener to each one.
@@ -363,57 +394,29 @@ document.addEventListener("DOMContentLoaded", function () {
   
           // Optional: Mark status = done in backend
           if (id) {
-              await fetch("http://localhost:3000/done", {
-                  method: "PUT",
-                  headers: {
-                      "Content-Type": "application/json"
-                  },
-                  body: JSON.stringify({ id })
-              });
+            const response = await fetch("http://localhost:3000/api/todos/delete", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({ id })
+              });              
           }
       }
   
       // ✅ If moved to any column EXCEPT "In Progress" and "Finished", add "Mark as In Progress"
       if (columnTitle !== "In Progress" && columnTitle !== "Finished") {
-          const footer = draggedCard.querySelector(".card-footer");
-  
-          if (!draggedCard.querySelector(".mark-in-progress")) {
-              const button = document.createElement("button");
-              button.textContent = "Mark as In Progress";
-              button.classList.add("mark-in-progress");
-  
-              button.addEventListener("click", async function () {
-                  const inProgressColumn = Array.from(document.querySelectorAll(".column")).find(column =>
-                      column.querySelector("h2").textContent.trim() === "In Progress"
-                  );
-                  if (!inProgressColumn) return;
-  
-                  const inProgressContainer = inProgressColumn.querySelector(".cards-container");
-                  inProgressContainer.appendChild(draggedCard);
-                  this.remove();
-  
-                  const id = draggedCard.getAttribute("data-id");
-                  if (id) {
-                      await fetch("http://localhost:3000/move", {
-                          method: "PUT",
-                          headers: {
-                              "Content-Type": "application/json"
-                          },
-                          body: JSON.stringify({ id, column: "In Progress" })
-                      });
-                  }
-              });
-  
-              footer.prepend(button);
-          }
+          addMarkInProgressButton(draggedCard);
       }
   
       // ✅ Always update backend with new column
       if (id) {
-          await fetch("http://localhost:3000/move", {
+          await fetch("http://localhost:3000/api/todos/move", {
               method: "PUT",
               headers: {
-                  "Content-Type": "application/json"
+                  "Content-Type": "application/json",
+                   Authorization: `Bearer ${token}`
               },
               body: JSON.stringify({ id, column: columnTitle })
           });
@@ -432,12 +435,16 @@ document.addEventListener("DOMContentLoaded", function () {
       
 
       async function loadAndRenderTasks() {
-        const response = await fetch("http://localhost:3000/");
+        const response = await fetch("http://localhost:3000/api/todos", {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
         const result = await response.json();
         const todos = result.todos;
     
        
-        console.log("Rendering todos from MongoDB:", todos);  //debugging currently will remove once issue found
+       //  console.log("Rendering todos from MongoDB:", todos);  //debugging currently will remove once issue found
     
     
         todos.forEach(todo => {
@@ -493,6 +500,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // if not finished, add in-progress button
          
             if (!todo.status && todo.column === "To Do") {
+              if (!card.querySelector(".mark-in-progress")) {
                 const button = document.createElement("button");
                 button.textContent = "Mark as In Progress";
               
@@ -508,17 +516,20 @@ document.addEventListener("DOMContentLoaded", function () {
                   //  persist to backend
                   const id = card.getAttribute("data-id");
                   if (id) {
-                    await fetch("http://localhost:3000/move", {
+                    await fetch("http://localhost:3000/api/todos/move", {
                       method: "PUT",
                       headers: {
-                        "Content-Type": "application/json"
+                        "Content-Type": "application/json", Authorization: `Bearer ${token}`
                       },
                       body: JSON.stringify({ id, column: "In Progress" })
                     });
                   }
                 });
               
-                cardFooter.appendChild(button);
+                cardFooter.prepend(button);
+
+              }
+                
               } else {
                 removePriorityAndAddDelete(card);
             }
@@ -552,10 +563,10 @@ document.addEventListener("DOMContentLoaded", function () {
               return;
             }
       
-            const response = await fetch("http://localhost:3000/delete", {
+            const response = await fetch("http://localhost:3000/api/todos/delete", {
               method: "POST",
               headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json", Authorization: `Bearer ${token}`
               },
               body: JSON.stringify({ id }) 
               /*
