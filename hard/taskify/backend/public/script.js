@@ -1,6 +1,17 @@
 import createModernPrompt from "./modal.js";
 import  openCardModal  from "./cardDetail.js";
+import { io } from "https://cdn.socket.io/4.7.2/socket.io.esm.min.js";
+const socket = io("http://localhost:3000");
 
+        // ✅ Listen for broadcast
+        socket.on("todoCreated", (newTodo) => {
+          console.log("📦 New todo received:", newTodo);
+        
+          // Re-render logic to insert into correct column
+          // TODO: You can call a renderSingleCard(newTodo) here
+          loadAndRenderTasks(); // or replace with efficient card render
+        });
+        
 
 
 
@@ -148,8 +159,14 @@ document.addEventListener("DOMContentLoaded", function () {
         cardHeader.classList.add("card-header");
 
         const cardTitle = document.createElement("h3");
-        cardTitle.addEventListener("click", () => openCardModal(card));
         cardTitle.textContent = taskTitle;
+
+        // Add click listener to the card with event delegation
+        card.addEventListener("click", (e) => {
+            // Don't open modal if clicking a button
+            if (e.target.tagName === 'BUTTON') return;
+            openCardModal(card);
+        });
 
         const cardPriority = document.createElement("span");
         cardPriority.classList.add("priority", priority);
@@ -233,36 +250,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // ✅ Conditionally add "Mark as In Progress" if NOT created in In Progress or Finished
     if (columnName !== "In Progress" && columnName !== "Finished") {
-
-  if (!card.querySelector(".mark-in-progress")) {
-    const button = document.createElement("button");
-        button.textContent = "Mark as In Progress";
-        button.classList.add("mark-in-progress");
-
-        button.addEventListener("click", async function () {
-            const inProgressColumn = Array.from(document.querySelectorAll(".column")).find(column =>
-                column.querySelector("h2").textContent.trim() === "In Progress"
-            );
-            if (!inProgressColumn) return;
-
-            const inProgressContainer = inProgressColumn.querySelector(".cards-container");
-            inProgressContainer.appendChild(card);
-            this.remove();
-
-            const id = card.getAttribute("data-id");
-            if (id) {
-                await fetch("http://localhost:3000/api/todos/move", {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json",Authorization: `Bearer ${token}` },
-                    body: JSON.stringify({ id, column: "In Progress" })
-                });
-            }
-        });
-
-        cardFooter.prepend(button);
-
-  }
-        
+        addMarkInProgressButton(card);
     }
 
     // Add card to UI
@@ -442,10 +430,11 @@ document.addEventListener("DOMContentLoaded", function () {
           });
         const result = await response.json();
         const todos = result.todos;
-    
-       
-       //  console.log("Rendering todos from MongoDB:", todos);  //debugging currently will remove once issue found
-    
+
+        // Clear existing cards to prevent duplicates
+        document.querySelectorAll('.cards-container').forEach(container => {
+          container.innerHTML = '';
+        });
     
         todos.forEach(todo => {
             const columnName = todo.column || (todo.status ? "Finished" : "To Do");
@@ -455,6 +444,16 @@ document.addEventListener("DOMContentLoaded", function () {
             );
     
             const cardContainer = column.querySelector(".cards-container");
+            
+            // Check if card with this ID already exists
+            const existingCard = document.querySelector(`.card[data-id="${todo._id}"]`);
+            if (existingCard) {
+              // If card exists, move it to the correct column if needed
+              if (existingCard.closest('.column') !== column) {
+                cardContainer.appendChild(existingCard);
+              }
+              return; // Skip creating a new card
+            }
     
             const card = document.createElement("div");
             card.classList.add("card");
@@ -467,6 +466,13 @@ document.addEventListener("DOMContentLoaded", function () {
     
             const cardTitle = document.createElement("h3");
             cardTitle.textContent = todo.title;
+            
+            // Add click listener to the card with event delegation in loadAndRenderTasks too
+            card.addEventListener("click", (e) => {
+                // Don't open modal if clicking a button
+                if (e.target.tagName === 'BUTTON') return;
+                openCardModal(card);
+            });
     
             const cardPriority = document.createElement("span");
             cardPriority.classList.add("priority", todo.priority);
@@ -497,45 +503,18 @@ document.addEventListener("DOMContentLoaded", function () {
             cardFooter.appendChild(dateElement);
             cardFooter.appendChild(timeElement);
     
-            // if not finished, add in-progress button
-         
-            if (!todo.status && todo.column === "To Do") {
-              if (!card.querySelector(".mark-in-progress")) {
-                const button = document.createElement("button");
-                button.textContent = "Mark as In Progress";
-              
-                button.addEventListener("click", async function () {
-                  const inProgressColumn = Array.from(document.querySelectorAll(".column")).find(column =>
-                    column.querySelector("h2").textContent.trim() === "In Progress"
-                  );
-                  if (!inProgressColumn) return;
-                  const inProgressContainer = inProgressColumn.querySelector(".cards-container");
-                  inProgressContainer.appendChild(card);
-                  button.remove();
-              
-                  //  persist to backend
-                  const id = card.getAttribute("data-id");
-                  if (id) {
-                    await fetch("http://localhost:3000/api/todos/move", {
-                      method: "PUT",
-                      headers: {
-                        "Content-Type": "application/json", Authorization: `Bearer ${token}`
-                      },
-                      body: JSON.stringify({ id, column: "In Progress" })
-                    });
-                  }
-                });
-              
-                cardFooter.prepend(button);
-
-              }
-                
-              } else {
+            // Add card structure first
+            card.appendChild(cardHeader);
+            card.appendChild(cardFooter);
+            
+            // Add buttons based on column
+            if (columnName === "To Do" || columnName === "Under Review") {
+                addMarkInProgressButton(card);
+            } else if (todo.status || columnName === "Finished") {
                 removePriorityAndAddDelete(card);
             }
     
-            card.appendChild(cardHeader);
-            card.appendChild(cardFooter);
+            // Finally append the card to container
             cardContainer.appendChild(card);
     
             card.addEventListener("dragstart", handleDragStart);
