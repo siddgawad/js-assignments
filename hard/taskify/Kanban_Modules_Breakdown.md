@@ -1,120 +1,60 @@
-# 🧠 Kanban Task Manager Breakdown
+Overview
+Purpose: Taskify is a Kanban board app where users register/login, create tasks (todos), move them between columns (To Do, In Progress, Under Review, Finished), and manage tasks with priorities and due dates. Real-time updates are handled via Socket.IO.
 
-This markdown file outlines the **9 core modules** of your Kanban + Backend system, built with vanilla JS, Express.js, and MongoDB (Mongoose).
+Backend:
+Tech Stack: Node.js, Express, MongoDB, Mongoose, bcrypt (password hashing), JWT (authentication), Socket.IO (real-time updates), express-validator (input validation).
 
----
+Models:
+Users.js: User model with username (used as email) and password; passwords are hashed with bcrypt via a pre-save hook.
 
-## ✅ 1. UI DOM Structure
+todo.js: Todo model with title, priority (low/medium/urgent), column (To Do/In Progress/Under Review/Finished), status (boolean), userId (references User), and timestamps.
 
-- HTML structure: columns (`To Do`, `In Progress`, `Finished`, etc.)
-- Buttons: "Add Task", dynamically added to each column
-- Event listeners tied to DOM loading (`DOMContentLoaded`)
+Controllers:
+authController.js: Handles register and login, generating JWTs.
 
----
+todoController.js: Handles todo endpoints for routing logic
 
-## ✅ 2. Card Creation Logic
+(Missing todoController.js logic assumed from todoRoutes.js): Likely includes getAllTodos, createTodo, deleteTodo, markDone, moveTodo.
 
-- Prompts for:
-  - `title`
-  - `priority` (low / medium / urgent)
-- Dynamically builds:
-  - `.card` div with header/footer
-  - Priority badge span
-  - Timestamp
-  - Optional action button (e.g., "Mark as In Progress")
+Middleware:
+authMiddleware.js: Verifies JWTs, attaching decoded user data to req.user.
 
----
+Routes:
+authRoutes.js: Defines /register and /login endpoints.
 
-## ✅ 3. Drag and Drop
+todoRoutes.js: Defines protected endpoints for todos (GET /, POST /, POST /delete, PUT /done, PUT /move) with validation.
 
-- `dragstart`, `dragover`, `drop`, and `dragleave` handlers
-- Visual feedback (`.drag-over` highlight)
-- Sets priority attribute during drag
-- Updates card column location on drop
+Server:
+server.js: Sets up Express, MongoDB, Socket.IO, and serves static files (HTML, JS, CSS).
 
----
+Frontend:
+Tech Stack: HTML, CSS, vanilla JavaScript, Socket.IO client, drag-and-drop API.
 
-## ✅ 4. Time Tracking System
+Pages:
+index.html: Main Kanban board with columns and logout button.
 
-- Sets `data-timestamp` at creation/move
-- Uses `setInterval` to update "Just now" / "5 mins ago"
-- Friendly relative time rendering
-- Persists `createdAt` from MongoDB
+login.html: Login form.
 
----
+register.html: Registration form with email and password validation.
 
-## ✅ 5. Mark as In Progress Logic
+Scripts:
+script.js: Handles Kanban board logic (drag-and-drop, task creation, rendering, Socket.IO events).
 
-- Dynamically added `button.mark-in-progress`
-- Only visible in:
-  - To Do
-  - Under Review (if applicable)
-- Removed if card is dropped into:
-  - In Progress
-  - Finished
+login.js: Submits login requests and stores JWT in localStorage.
 
----
+register.js: Validates email/password and submits registration requests.
 
-## ✅ 6. Delete Button Logic
+cardDetail.js: Manages task detail modals (title, description, image, due date).
 
-- Appears when card is dropped into “Finished”
-- `button.delete-btn` dynamically added
-- Calls backend `POST /delete`
-- Removes from:
-  - MongoDB
-  - UI
+modal.js: Creates prompt modals for task creation.
 
----
+Styles:
+styles.css: Styles the Kanban board, cards, and auth forms.
 
-## ✅ 7. MongoDB Backend (Express.js + Mongoose)
+modal.css: Styles modals for task creation and details.
 
-- Routes:
-  - `GET /` — fetch all tasks
-  - `POST /` — create new task
-  - `PUT /done` — mark task as done
-  - `PUT /move` — update task's column
-  - `POST /delete` — delete a task
-- MongoDB stores:
-  - `title`, `priority`, `column`, `status`, `createdAt`
+auth.css: Styles login and register pages.
 
----
-
-## ✅ 8. Persistence (loadAndRenderTasks)
-
-- On page load (`DOMContentLoaded`)
-  - Fetches all tasks from MongoDB
-  - Recreates card DOM for each task
-- Sets correct:
-  - Priority badge
-  - Column placement
-  - Button visibility
-
----
-
-## ✅ 9. Card Movement Tracking & Status
-
-- `column`: tracks which Kanban column card belongs to
-- `status`: true = done
-- UI syncs with backend:
-  - `PUT /move` when dropped
-  - `PUT /done` when marked finished
-  - Reflects correct time and buttons
-
----
-
-## 📁 Future Ideas
-
-- Add `movedAt` timestamp
-- Visual log of "Moved from X to Y"
-- Subtasks, due dates, filters
-
----
-
-## 🔧 Tech Stack
-
-- **Frontend**: HTML + CSS + Vanilla JS (no frameworks)
-- **Backend**: Express.js + Mongoose
-- **Database**: MongoDB Atlas
 
 ---
 
