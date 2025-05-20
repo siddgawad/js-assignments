@@ -8,14 +8,14 @@ const app = express();
 
 app.use(express.json());
 
-import userRoutes from "./routes/userRoutes.js";
-app.use("/users",userRoutes);
+import adminRouter from "./routes/adminRoutes";
+app.use("/api/admin",adminRouter);
 
-import adminRoutes from "./routes/adminRoutes.js";
-app.use("/admin",adminRoutes);
+import courseRouter from "./routes/courseRoutes";
+app.use("/api/course",courseRouter);
 
-import courseRoutes from "./routes/courseRoutes.js";
-app.use("/course",courseRoutes);
+import userRouter from "./routes/userRoutes";
+app.use("/user",userRouter);
 
 
 mongoose.connect(process.env.MONGO_URI)

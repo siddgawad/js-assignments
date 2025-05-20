@@ -11,3 +11,4 @@ courseRouter.get("/course/purchased",getAllPurchasedCoursesController);
 import { purchaseCourseController } from "../controller/CourseController";
 courseRouter.post("/course/purchasecourse",purchaseCourseController);
 
+module.exports = {courseRouter:courseRouter};
