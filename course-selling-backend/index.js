@@ -4,9 +4,9 @@ import dotenv from "dotenv";
 dotenv.config();
 
 
-import courseRouter from "./routes/courseRoutes";
-import userRouter from "./routes/userRoutes";
-
+import courseRouter from "./routes/courseRoutes.js";
+import userRouter from "./routes/userRoutes.js";
+import adminRouter from "./routes/adminRoutes.js";
 
 const PORT = process.env.PORT;
 const API_URL = process.env.API_URL;
@@ -16,7 +16,7 @@ const app = express();
 
 app.use("/user",userRouter);
 app.use("/course",courseRouter);
-
+app.use("/admin",adminRouter);
 
 mongoose.connect(`${MONGO_URI}`)
 .then(()=>{
