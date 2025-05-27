@@ -3,7 +3,6 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 dotenv.config();
 
-
 import courseRouter from "./routes/courseRoutes.js";
 import userRouter from "./routes/userRoutes.js";
 import adminRouter from "./routes/adminRoutes.js";
@@ -14,6 +13,7 @@ const MONGO_URI = process.env.MONGO_URI;
 
 const app = express();
 
+
 app.use("/user",userRouter);
 app.use("/course",courseRouter);
 app.use("/admin",adminRouter);
@@ -21,7 +21,7 @@ app.use("/admin",adminRouter);
 mongoose.connect(`${MONGO_URI}`)
 .then(()=>{
     app.listen(`${PORT}`, ()=>{
-        console.log(`Server running at ${API_URL}/${PORT}`);
+        console.log(`Server running at ${API_URL}:${PORT}`);
     })
 })
 .catch((err)=>{

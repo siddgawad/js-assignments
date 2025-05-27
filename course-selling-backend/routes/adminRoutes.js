@@ -1,28 +1,25 @@
 import express from "express";
+import adminSignUpController from "../controller/adminController.js";
+import adminSignInController from "../controller/adminController.js";
+import adminMiddleware from "../middleware/adminMiddleware.js";
+import adminCourseController from "../controller/adminController.js";
+import adminPutCourseController from "../controller/adminController.js";
+import adminGetCourseController from "../controller/adminController.js";
+
 
 const adminRouter = express.Router();
 
 
 
-adminRouter.post("/admin/signin", (req,res)=>{
-    res.json({message:"Admin signed in"});
-});
+adminRouter.post("/signin", adminSignInController);
 
-adminRouter.post("/admin/signup",(req,res)=>{
-    res.json({message:"Admin signed up"});
-});
+adminRouter.post("/signup",adminSignUpController);
 
-adminRouter.post("/admin/course",(req,res)=>{
-    res.json({message:"Admin created course"});
-});
+adminRouter.post("/course",adminMiddleware,adminCourseController);
 
-adminRouter.put("/admin/course",(req,res)=>{
-    res.json({message:"Admin edited course"});
-});
+adminRouter.put("/course",adminMiddleware,adminPutCourseController);
 
-adminRouter.post("/admin/course/bulk",(req,res)=>{
-    res.json({message:"Admin gets all courses in bulk"});
-});
+adminRouter.post("/course/bulk",adminMiddleware,adminGetCourseController);
 
 
 export default adminRouter;
