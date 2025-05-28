@@ -1,10 +1,15 @@
 import express from "express";
-import adminSignUpController from "../controller/adminController.js";
-import adminSignInController from "../controller/adminController.js";
+
+import adminController from "../controller/adminController.js";
+const {
+    adminSignInController,
+    adminSignUpController,
+    adminCourseController,
+    adminPutCourseController,
+    adminGetCourseController
+} = adminController;
 import adminMiddleware from "../middleware/adminMiddleware.js";
-import adminCourseController from "../controller/adminController.js";
-import adminPutCourseController from "../controller/adminController.js";
-import adminGetCourseController from "../controller/adminController.js";
+
 
 
 const adminRouter = express.Router();

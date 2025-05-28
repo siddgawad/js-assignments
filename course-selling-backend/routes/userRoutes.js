@@ -1,8 +1,9 @@
 
 import express from "express";
 import authMiddleware from "../middleware/authMiddleware";
-import userSignInController from "../controller/userController.js";
-import userSignUpController from "../controller/userController.js"
+import userController from "../controller/userController.js";
+const {userSignInController,userSignUpController,userPurchaseController} = userController;
+
 
 const userRouter = express.Router();
 
@@ -11,10 +12,7 @@ const userRouter = express.Router();
     
     userRouter.post("/signup",userSignUpController);
     
-    userRouter.post("/purchases",authMiddleware,(req,res)=>{
-        const userId = req.userId;
-        res.json({message:"User purchased course"});
-    });
+    userRouter.post("/purchases",authMiddleware,userPurchaseController);
 
 
 

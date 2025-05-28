@@ -40,7 +40,6 @@ const Admin = mongoose.model("Admin",adminSchema);
 // course schema
 
 const courseSchema = new mongoose.Schema({
-    courseId:{type:mongoose.Types.ObjectId},
     title:{type:String,required:true},
     description:{type:String,required:true},
     price:{type:Number,required:true},

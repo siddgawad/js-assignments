@@ -1,5 +1,5 @@
-
-import User from "../models/database.js";
+import db from "../models/database.js";
+const {User,Course,Purchase} = db;
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
 dotenv.config();
@@ -40,6 +40,22 @@ const userSignUpController = async function (req,res){
     
 };
 
+const userPurchaseController = async function(req,res){
+    const {title,description,price} = req.body;
+    const {userId} = req.UserId;
+    if (!userId) return res.status(403).json({ message: "Not authenticated" });
+    try{
+        const courseExists = await Course.findOne({title,description,price});
+        if(!courseExists) return res.status(404).json({message:"Could not find selected course"});
+       
+        const purchasedCourse = await Purchase.create({courseId:purchasedCourse._id,userId});
+        if(!purchasedCourse) return res.status(404).json({message:"Could not register purchase"});
+        return res.status(200).json({message:"Successfully registered course",purchaseId:purchasedCourse._id});
+    }catch(err){
+        return res.status(500).json({message:"Internal server error"});
+
+    }
+}
 
 
-export default {userSignInController,userSignUpController};
+export default {userSignInController,userSignUpController,userPurchaseController};
