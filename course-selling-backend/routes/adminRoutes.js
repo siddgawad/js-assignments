@@ -24,7 +24,7 @@ adminRouter.post("/course",adminMiddleware,adminCourseController);
 
 adminRouter.put("/course",adminMiddleware,adminPutCourseController);
 
-adminRouter.post("/course/bulk",adminMiddleware,adminGetCourseController);
+adminRouter.get("/course/bulk",adminMiddleware,adminGetCourseController);
 
 
 export default adminRouter;

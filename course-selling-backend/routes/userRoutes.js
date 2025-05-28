@@ -1,6 +1,6 @@
 
 import express from "express";
-import authMiddleware from "../middleware/authMiddleware";
+import authMiddleware from "../middleware/authMiddleware.js";
 import userController from "../controller/userController.js";
 const {userSignInController,userSignUpController,userPurchaseController} = userController;
 

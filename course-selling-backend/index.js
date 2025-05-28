@@ -12,7 +12,7 @@ const API_URL = process.env.API_URL;
 const MONGO_URI = process.env.MONGO_URI;
 
 const app = express();
-
+app.use(express.json());
 
 app.use("/user",userRouter);
 app.use("/course",courseRouter);

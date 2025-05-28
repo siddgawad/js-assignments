@@ -66,7 +66,7 @@ const adminCourseController = async (req, res) => {
       creatorId: adminId
     });
 
-    return res.status(201).json({ message: "Admin created course", courseId: course._id });
+    return res.status(201).json({ message: "Admin created course", courseId: course._id});
   } catch (err) {
     console.error("Course creation error:", err);
     return res.status(500).json({ message: "Internal server error" });
@@ -104,7 +104,7 @@ const adminPutCourseController = async (req, res) => {
 };
 
 const adminGetCourseController = async (req, res) => {
-    const adminId=req.userId;
+    const adminId=req.adminId;
   try {
     const courses = await Course.find({creatorId:adminId});
     if (!courses.length) {

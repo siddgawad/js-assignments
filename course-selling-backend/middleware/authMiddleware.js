@@ -6,7 +6,7 @@ dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET;
 
 
-const authMiddleware = async function(req,res){
+const authMiddleware = async function(req,res,next){
     const accessToken = req.headers.token;
     const decoded = jwt.verify(accessToken,JWT_SECRET);
     if(decoded){
