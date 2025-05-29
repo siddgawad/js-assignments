@@ -21,7 +21,7 @@ const adminSignInController = async (req, res) => {
     const accessToken = jwt.sign(
       { id: existingAdmin._id },
       process.env.JWT_ADMIN_SECRET,
-      { expiresIn: "1h" }
+      
     );
 
     return res.json({ message: "Admin signed in", accessToken });
@@ -43,7 +43,7 @@ const adminSignUpController = async (req, res) => {
     const accessToken = jwt.sign(
       { id: newAdmin._id },
       process.env.JWT_ADMIN_SECRET,
-      { expiresIn: "1h" }
+      
     );
 
     return res.status(201).json({ message: "Admin signed up", accessToken });

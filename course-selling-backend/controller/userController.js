@@ -1,5 +1,5 @@
 import db from "../models/database.js";
-const {User,Purchase} = db;
+const {User,Purchase,Course} = db;
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
@@ -50,7 +50,13 @@ const userGetPurchaseController = async function(req,res){
     try{
         const purchases = await Purchase.find({userId: new mongoose.Types.ObjectId(userId)})
         if(!purchases) return res.status(404).json({message:"Could not find any course"});
-        res.json({purchases});
+        const courseData = await Course.find({
+            _id: {$in: purchases.map(x=>x.courseId)}
+        })
+        
+        res.json({purchases,courseData});
+
+        
     }catch(err){
         console.error("USer get purchases error:",err)
         return res.status(500).json({message:"Internal server error"});
